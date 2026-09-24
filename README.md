@@ -1,4 +1,4 @@
-# 📮 Buscador de CEP (programa desktop)
+# Buscador de CEP (programa desktop)
 
 Sistema acadêmico: **programa de computador com janela própria** que
 **recebe um CEP, joga no ViaCEP (programa de terceiros) e o endereço
