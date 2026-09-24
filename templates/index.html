@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GPS Simples com Google Maps</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  {% if google_maps_api_key %}
+  <script async defer src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&language=pt-BR&callback=initMap"></script>
+  {% endif %}
+</head>
+<body>
+  <header>
+    <h1>🧭 GPS Simples <span>integrado ao Google Maps</span></h1>
+    <p class="subtitle">Digite os endereços → o sistema joga no Google Maps → o trajeto volta para cá</p>
+  </header>
+
+  <main>
+    <section class="card form-card">
+      <div class="row">
+        <label for="origin">Origem</label>
+        <div class="input-group">
+          <input id="origin" type="text" placeholder="Ex: Av. Paulista, 1000 - São Paulo" autocomplete="off" />
+          <button id="btn-geo" title="Usar minha localização">📍</button>
+        </div>
+      </div>
+
+      <div class="row">
+        <label for="destination">Destino</label>
+        <input id="destination" type="text" placeholder="Ex: Rua Augusta, 500 - São Paulo" autocomplete="off" />
+      </div>
+
+      <div class="row inline">
+        <div>
+          <label for="mode">Modo</label>
+          <select id="mode">
+            <option value="driving">🚗 Carro</option>
+            <option value="walking">🚶 A pé</option>
+            <option value="bicycling">🚲 Bicicleta</option>
+            <option value="transit">🚌 Transporte público</option>
+          </select>
+        </div>
+        <div class="buttons">
+          <button id="btn-route" class="primary">Calcular rota</button>
+          <button id="btn-only-search">🔎 Buscar 1 endereço</button>
+          <button id="btn-clear">Limpar</button>
+        </div>
+      </div>
+
+      <div class="row">
+        <a id="maps-link" href="#" target="_blank" rel="noopener" class="hidden">↗ Abrir este trajeto no Google Maps</a>
+        <p id="status" class="status"></p>
+      </div>
+
+      <div id="result" class="result hidden">
+        <div class="stats">
+          <div><strong>Distância</strong><span id="r-distance">—</span></div>
+          <div><strong>Tempo</strong><span id="r-duration">—</span></div>
+          <div><strong>De</strong><span id="r-start">—</span></div>
+          <div><strong>Para</strong><span id="r-end">—</span></div>
+        </div>
+        <h3>Passo a passo</h3>
+        <ol id="r-steps"></ol>
+      </div>
+    </section>
+
+    <section class="card map-card">
+      <!-- Com chave: mapa interativo JS. Sem chave: iframe incorporado do Google Maps -->
+      <div id="map"></div>
+      <iframe id="map-frame" title="Google Maps" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+    </section>
+  </main>
+
+  <footer>
+    <p>Sistema acadêmico · Terceiro utilizado: <strong>Google Maps Platform</strong> (Maps JS API + Directions API + URLs universais)</p>
+    <p id="key-status">{% if google_maps_api_key %}✅ Chave do Google configurada — rota completa ativa{% else %}⚠️ Sem chave — modo incorporado ativo. Veja o README para ativar distância/tempo.{% endif %}</p>
+  </footer>
+
+  <script>
+    window.HAS_GOOGLE_KEY = {{ 'true' if google_maps_api_key else 'false' }};
+  </script>
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
