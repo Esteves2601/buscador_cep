@@ -9,6 +9,8 @@ volta para dentro do programa**. Também faz o caminho inverso
 API e sem cadastro. Cumpre o requisito do trabalho sem a burocracia do
 Google Cloud.
 
+**Artigo no LinkedIn:** https://www.linkedin.com/pulse/buscador-de-cep-desktop-e-mobile-com-api-viacep-estev%25C3%25A3o-ximenes-01w8c/?trackingId=N7W10lNcRya1Q4U7wbxtLA%3D%3D
+
 ## Rodar o programa
 
 **Duplo clique** no atalho **"Buscador de CEP"** (Área de Trabalho): o
