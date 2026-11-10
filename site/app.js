@@ -217,9 +217,80 @@ el.btnCopiar.addEventListener("click", async () => {
   setTimeout(() => { el.btnCopiar.textContent = "Copiar endereço"; }, 2000);
 });
 
-/* Permite abrir com CEP na URL: ?cep=01310100 */
-const cepDaUrl = new URLSearchParams(location.search).get("cep");
+/* Permite abrir por atalho do app: ?aba=endereco e ?cep=01310100 */
+const parametros = new URLSearchParams(location.search);
+
+if (parametros.get("aba") === "endereco") {
+  mudarAba(false);
+}
+
+const cepDaUrl = parametros.get("cep");
 if (cepDaUrl && somenteDigitos(cepDaUrl).length === 8) {
   el.cep.value = formatarCep(cepDaUrl);
   consultarCep(cepDaUrl);
+}
+
+/* ---------- App instalável (PWA) ---------- */
+
+const painelInstalar = $("instalar");
+const textoInstalar = $("instalar-texto");
+const btnInstalar = $("btn-instalar");
+const btnFecharInstalar = $("btn-fechar-instalar");
+
+let promptInstalar = null;
+let instalado = window.matchMedia("(display-mode: standalone)").matches ||
+  window.navigator.standalone === true;
+const instalacaoDispensada = () => localStorage.getItem("ocultarInstalar") === "1";
+
+function mostrarInstalar() {
+  if (!instalado && !instalacaoDispensada()) painelInstalar.classList.remove("oculto");
+}
+function esconderInstalar() {
+  painelInstalar.classList.add("oculto");
+}
+
+window.addEventListener("beforeinstallprompt", (evento) => {
+  evento.preventDefault();
+  promptInstalar = evento;
+  mostrarInstalar();
+});
+
+btnInstalar.addEventListener("click", async () => {
+  if (promptInstalar) {
+    promptInstalar.prompt();
+    const escolha = await promptInstalar.userChoice;
+    promptInstalar = null;
+    if (escolha && escolha.outcome === "accepted") {
+      instalado = true;
+      esconderInstalar();
+    }
+    return;
+  }
+  textoInstalar.textContent =
+    'No iPhone: toque em Compartilhar e depois em "Adicionar à Tela de Início".';
+});
+
+btnFecharInstalar.addEventListener("click", () => {
+  localStorage.setItem("ocultarInstalar", "1");
+  esconderInstalar();
+});
+
+window.addEventListener("appinstalled", () => {
+  instalado = true;
+  esconderInstalar();
+});
+
+// iPhone não tem instalação automática: mostramos as instruções
+if (/iphone|ipad|ipod/i.test(navigator.userAgent) && !instalado) {
+  textoInstalar.textContent =
+    'Instale no iPhone: toque em Compartilhar e depois em "Adicionar à Tela de Início".';
+  btnInstalar.textContent = "Entendi";
+  mostrarInstalar();
+}
+
+// Service worker (permite abrir o app offline)
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+  });
 }

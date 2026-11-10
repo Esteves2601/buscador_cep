@@ -13,3 +13,16 @@
 
 /favicon.ico
   Cache-Control: public, max-age=2592000
+
+/manifest.webmanifest
+  Content-Type: application/manifest+json
+  Cache-Control: public, max-age=3600
+
+/sw.js
+  Cache-Control: no-cache
+
+/icone-192.png
+  Cache-Control: public, max-age=604800
+
+/icone-512.png
+  Cache-Control: public, max-age=604800

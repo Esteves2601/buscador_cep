@@ -1,0 +1,31 @@
+{
+  "name": "Buscador de CEP",
+  "short_name": "Buscador de CEP",
+  "description": "Consulte endereços pelo CEP ou descubra o CEP pelo endereço. Dados do ViaCEP.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#F3EDE0",
+  "theme_color": "#2F7D33",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "categories": ["utilities", "productivity"],
+  "icons": [
+    { "src": "/icone-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icone-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icone-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Buscar CEP",
+      "short_name": "Buscar CEP",
+      "url": "/?aba=cep"
+    },
+    {
+      "name": "Buscar endereço",
+      "short_name": "Endereço",
+      "url": "/?aba=endereco"
+    }
+  ]
+}

@@ -151,6 +151,29 @@ input:focus {
 .rodape p { margin: 4px 0; }
 .rodape a { color: var(--verde); }
 
+/* Barra de instalação (PWA) */
+.instalar {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  z-index: 20;
+  max-width: 640px;
+  margin: 0 auto;
+  background: var(--branco);
+  border: 2px solid var(--verde);
+  border-radius: 14px;
+  padding: 14px 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .18);
+}
+.instalar p {
+  margin: 0 0 10px;
+  font-size: .95rem;
+  color: #000;
+}
+.instalar-acoes { display: flex; gap: 10px; }
+.instalar-acoes .btn { min-width: 0; flex: 1; padding: 11px 14px; font-size: .95rem; }
+
 @media (max-width: 420px) {
   .topo h1 { font-size: 1.45rem; }
   .abas { flex-direction: column; }
