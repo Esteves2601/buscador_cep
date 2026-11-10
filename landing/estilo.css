@@ -1,0 +1,124 @@
+:root {
+  --bege: #F3EDE0;
+  --bege-escuro: #E7DCC3;
+  --verde: #2F7D33;
+  --verde-escuro: #1D5220;
+  --branco: #FFFDF6;
+  --texto: #3E3529;
+  --cinza: #6B5D4D;
+  --borda: #D8CBB2;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bege);
+  color: var(--texto);
+  font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+  line-height: 1.6;
+}
+
+.topo {
+  background: var(--verde);
+  border-bottom: 4px solid var(--verde-escuro);
+  color: #fff;
+  text-align: center;
+  padding: 34px 16px;
+}
+.topo h1 { margin: 0; font-size: 2.1rem; letter-spacing: .5px; }
+.topo p { margin: 8px 0 0; opacity: .92; font-size: .95rem; }
+
+.container {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 28px 18px 10px;
+}
+
+.intro p { font-size: 1.05rem; color: var(--texto); margin-top: 0; }
+
+h2 {
+  font-size: 1.15rem;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--verde);
+  margin: 34px 0 14px;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+}
+
+.card {
+  display: block;
+  background: var(--branco);
+  border: 1px solid var(--borda);
+  border-radius: 14px;
+  padding: 18px 18px 16px;
+  text-decoration: none;
+  color: var(--texto);
+  transition: transform .15s ease, border-color .15s ease;
+}
+.card:hover { transform: translateY(-3px); border-color: var(--verde); }
+.card h3 { margin: 8px 0 6px; font-size: 1.15rem; }
+.card p { margin: 0 0 12px; font-size: .92rem; color: var(--cinza); }
+
+.tag {
+  display: inline-block;
+  background: #E9F3E9;
+  color: var(--verde);
+  font-size: .72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  padding: 4px 9px;
+  border-radius: 20px;
+}
+.link { font-weight: 700; color: var(--verde); font-size: .92rem; }
+
+.contato {
+  background: var(--branco);
+  border: 1px solid var(--borda);
+  border-radius: 14px;
+  padding: 22px;
+  text-align: center;
+}
+.botao {
+  display: inline-block;
+  background: var(--verde);
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+  padding: 13px 22px;
+  border-radius: 10px;
+}
+.botao:hover { background: var(--verde-escuro); }
+
+.redes {
+  margin-top: 16px;
+  display: flex;
+  gap: 18px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.redes a {
+  color: var(--verde);
+  font-weight: 600;
+  text-decoration: none;
+  font-size: .93rem;
+  border-bottom: 2px solid transparent;
+}
+.redes a:hover { border-color: var(--verde); }
+
+.rodape {
+  text-align: center;
+  color: var(--cinza);
+  font-size: .85rem;
+  padding: 26px 16px 34px;
+}
+
+@media (max-width: 420px) {
+  .topo h1 { font-size: 1.7rem; }
+}

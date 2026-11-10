@@ -1,6 +1,7 @@
 # Buscador de CEP
 
-**Site no ar:** https://estevestec.com.br
+**Site no ar:** https://cep.estevestec.com.br
+**Site institucional:** https://estevestec.com.br
 
 Sistema acadêmico: **programa de computador com janela própria** que
 **recebe um CEP, joga no ViaCEP (programa de terceiros) e o endereço
@@ -11,7 +12,7 @@ O mesmo sistema existe em três versões: **desktop** (PySide6),
 **Android** (APK nativo) e **web** (site estático em `site/`,
 publicado no Cloudflare Pages).
 
-**Contato:** estevao@estevestec.com.br
+**Contato:** contatos@estevestec.com.br
 
 **Terceiro utilizado: ViaCEP (viacep.com.br)** — gratuito, sem chave de
 API e sem cadastro. Cumpre o requisito do trabalho sem a burocracia do
@@ -73,12 +74,26 @@ O APK sai em `android/app/build/outputs/apk/debug/app-debug.apk`
 
 ```
 gps_simples/
-├── buscador_cep.py  # O PROGRAMA (janela desktop + ViaCEP)
+├── buscador_cep.py  # Programa desktop (janela PySide6 + ViaCEP)
+├── cep_core.py      # Núcleo compartilhado com o site (liga no ViaCEP)
+├── site/            # SITE do app -> https://cep.estevestec.com.br
+├── landing/         # Site institucional -> https://estevestec.com.br
+├── tools/
+│   └── deploy_pages.py  # Publica uma pasta no Cloudflare Pages
 ├── android/         # APP DE CELULAR (nativo, compila em app-debug.apk)
 ├── instalar_celular.py + INSTALAR_NO_CELULAR.bat  # instala o APK via QR
 ├── RODAR_CEP.bat    # Instalador da primeira vez (com janela)
-├── README_CEP.md    # Este arquivo
-└── requirements.txt # Dependências (PySide6 + requests)
+└── requirements.txt # Dependências (PySide6 + requests + blake3)
+```
+
+## Publicar o site (Cloudflare Pages)
+
+```powershell
+$env:CLOUDFLARE_API_TOKEN = "seu_token"
+$env:CLOUDFLARE_ACCOUNT_ID = "sua_account_id"
+py -m pip install blake3
+py tools/deploy_pages.py --dir site --project buscador-cep
+py tools/deploy_pages.py --dir landing --project estevestec
 ```
 
 (Os arquivos `gps_desktop.py`, `app.py`, `RODAR_GPS.bat` são do projeto
