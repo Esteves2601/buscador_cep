@@ -1,9 +1,17 @@
-# Buscador de CEP (programa desktop)
+# Buscador de CEP
+
+**Site no ar:** https://estevestec.com.br
 
 Sistema acadêmico: **programa de computador com janela própria** que
 **recebe um CEP, joga no ViaCEP (programa de terceiros) e o endereço
 volta para dentro do programa**. Também faz o caminho inverso
 (endereço → CEP) e abre o endereço no mapa.
+
+O mesmo sistema existe em três versões: **desktop** (PySide6),
+**Android** (APK nativo) e **web** (site estático em `site/`,
+publicado no Cloudflare Pages).
+
+**Contato:** estevao@estevestec.com.br
 
 **Terceiro utilizado: ViaCEP (viacep.com.br)** — gratuito, sem chave de
 API e sem cadastro. Cumpre o requisito do trabalho sem a burocracia do
