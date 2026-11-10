@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Buscador de CEP — EstevesTec</title>
+  <meta name="description" content="Consulte endereços pelo CEP ou descubra o CEP pelo endereço. Dados oficiais do ViaCEP, sem cadastro.">
+  <meta name="theme-color" content="#2F7D33">
+  <meta property="og:title" content="Buscador de CEP">
+  <meta property="og:description" content="CEP → Endereço e Endereço → CEP, direto do ViaCEP.">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+  <header class="topo">
+    <h1>Buscador de CEP</h1>
+    <p>Consulta de endereços via ViaCEP</p>
+  </header>
+
+  <main class="container">
+    <nav class="abas" role="tablist" aria-label="Tipo de consulta">
+      <button id="aba-cep" class="aba ativa" role="tab" aria-selected="true" aria-controls="painel-cep" type="button">CEP → Endereço</button>
+      <button id="aba-end" class="aba" role="tab" aria-selected="false" aria-controls="painel-end" type="button">Endereço → CEP</button>
+    </nav>
+
+    <!-- Aba 1: CEP -> Endereço -->
+    <section id="painel-cep" class="painel" role="tabpanel" aria-labelledby="aba-cep">
+      <form id="form-cep" novalidate>
+        <label for="cep">CEP</label>
+        <input id="cep" name="cep" type="text" inputmode="numeric" autocomplete="postal-code"
+               maxlength="9" placeholder="Ex: 01310-100" required>
+        <div class="botoes">
+          <button class="btn primario" type="submit" id="btn-cep">Buscar</button>
+          <button class="btn secundario" type="button" id="btn-limpar">Limpar</button>
+        </div>
+      </form>
+
+      <p id="status-cep" class="status" role="status" aria-live="polite">Digite um CEP e clique em Buscar.</p>
+
+      <div id="resultado" class="cartao oculto">
+        <dl class="dados">
+          <div><dt>Rua</dt><dd id="r-rua">—</dd></div>
+          <div><dt>Bairro</dt><dd id="r-bairro">—</dd></div>
+          <div><dt>Cidade</dt><dd id="r-cidade">—</dd></div>
+          <div><dt>UF</dt><dd id="r-uf">—</dd></div>
+          <div><dt>DDD</dt><dd id="r-ddd">—</dd></div>
+          <div><dt>IBGE</dt><dd id="r-ibge">—</dd></div>
+          <div><dt>CEP</dt><dd id="r-cep">—</dd></div>
+        </dl>
+        <div class="botoes">
+          <a id="btn-mapa" class="btn secundario" href="#" target="_blank" rel="noopener noreferrer">Ver no mapa</a>
+          <button id="btn-copiar" class="btn secundario" type="button">Copiar endereço</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Aba 2: Endereço -> CEP -->
+    <section id="painel-end" class="painel oculto" role="tabpanel" aria-labelledby="aba-end">
+      <form id="form-end" novalidate>
+        <label for="uf">UF (2 letras)</label>
+        <input id="uf" name="uf" type="text" maxlength="2" placeholder="Ex: SP" autocapitalize="characters" required>
+
+        <label for="cidade">Cidade</label>
+        <input id="cidade" name="cidade" type="text" maxlength="60" placeholder="Ex: São Paulo" required>
+
+        <label for="rua">Rua (mínimo 3 letras)</label>
+        <input id="rua" name="rua" type="text" maxlength="60" placeholder="Ex: Avenida Paulista" required>
+
+        <div class="botoes">
+          <button class="btn primario" type="submit" id="btn-end">Buscar CEP</button>
+        </div>
+      </form>
+      <p id="status-end" class="status" role="status" aria-live="polite">Informe UF, cidade e rua.</p>
+      <ul id="lista" class="lista"></ul>
+    </section>
+  </main>
+
+  <footer class="rodape">
+    <p>Dados: <a href="https://viacep.com.br" target="_blank" rel="noopener noreferrer">ViaCEP</a> · sem chave, sem cadastro</p>
+    <p>Projeto de Estevão Ximenes · <a href="https://github.com/Esteves2601/buscador_cep" target="_blank" rel="noopener noreferrer">código no GitHub</a></p>
+  </footer>
+
+  <script src="app.js" defer></script>
+</body>
+</html>

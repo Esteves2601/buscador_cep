@@ -8,64 +8,21 @@ endereco -> CEP.
 Execucao:  py buscador_cep.py
 """
 
-import re
 import sys
-import urllib.parse
 import webbrowser
 from pathlib import Path
 
-import requests
+from cep_core import (  # noqa: F401  (re-export para compatibilidade)
+    CepError,
+    address_to_text,
+    clean_cep,
+    format_cep,
+    lookup_address,
+    lookup_cep,
+    maps_url_for,
+)
 
 BASE_DIR = Path(__file__).resolve().parent
-
-# ----------------------------------------------------------------------------
-# Funcoes puras (ligacao com o terceiro) — testaveis sem abrir janela
-# ----------------------------------------------------------------------------
-
-def clean_cep(text):
-    """Tira tudo que nao e digito: '01310-100' -> '01310100'."""
-    return re.sub(r"\D", "", text or "")
-
-
-def format_cep(digits):
-    """'01310100' -> '01310-100'."""
-    d = clean_cep(digits)
-    return d[:5] + "-" + d[5:] if len(d) == 8 else d
-
-
-def lookup_cep(cep):
-    """CEP -> endereco. Levanta ValueError se invalido/nao encontrado."""
-    digits = clean_cep(cep)
-    if len(digits) != 8:
-        raise ValueError("CEP deve ter 8 digitos.")
-    resp = requests.get("https://viacep.com.br/ws/%s/json/" % digits, timeout=15)
-    data = resp.json()
-    if data.get("erro"):
-        raise ValueError("CEP nao encontrado.")
-    return data
-
-
-def lookup_address(uf, cidade, rua):
-    """Endereco -> lista de CEPs. Levanta ValueError se nada encontrado."""
-    uf = (uf or "").strip().upper()
-    cidade = (cidade or "").strip()
-    rua = (rua or "").strip()
-    if len(uf) != 2 or not cidade or len(rua) < 3:
-        raise ValueError("Informe UF (2 letras), cidade e rua (min. 3 letras).")
-    url = "https://viacep.com.br/ws/%s/%s/%s/json/" % (
-        urllib.parse.quote(uf),
-        urllib.parse.quote(cidade),
-        urllib.parse.quote(rua),
-    )
-    data = requests.get(url, timeout=20).json()
-    if not data:
-        raise ValueError("Nenhum endereco encontrado.")
-    return data
-
-
-def maps_url_for(address):
-    """Monta link do endereco no mapa (URL universal, sem chave)."""
-    return "https://www.google.com/maps/search/?api=1&query=" + urllib.parse.quote_plus(address)
 
 
 # ----------------------------------------------------------------------------
@@ -353,9 +310,7 @@ class CepWindow(QMainWindow):
         self.res_labels["DDD"].setText(data.get("ddd") or "—")
         self.res_labels["IBGE"].setText(data.get("ibge") or "—")
         self.res_labels["CEP"].setText(format_cep(data.get("cep", "")))
-        parts = [data.get("logradouro", ""), data.get("bairro", ""),
-                 data.get("localidade", ""), data.get("uf", "")]
-        self.last_address = ", ".join(p for p in parts if p)
+        self.last_address = address_to_text(data)
         self.btn_map.setEnabled(bool(self.last_address))
         self.set_status(self.status1, "Endereco retornado pelo ViaCEP.", mode="ok")
 
