@@ -765,7 +765,7 @@ button, input { font-family: inherit; }
 }
 
 /* ==========================================================================
-   Melhorias (Onda 1 + extras): atalhos, chips, histórico, mapa, toast, modal
+   Melhorias (Onda 1 + extras): atalhos, chips, histï¿½rico, mapa, toast, modal
    ========================================================================== */
 
 :root { --font-label: 'Space Grotesk', var(--font-sans); }
@@ -780,7 +780,7 @@ button, input { font-family: inherit; }
   font-family: var(--font-label);
 }
 
-/* Input com ícone e botão de limpar */
+/* Input com ï¿½cone e botï¿½o de limpar */
 .input-wrap { position: relative; display: flex; align-items: center; }
 .input-icon {
   position: absolute;
@@ -848,13 +848,13 @@ button, input { font-family: inherit; }
 }
 .estado-chip svg { color: var(--primary); }
 
-/* Cartão de resultado: faixa de acento */
+/* Cartï¿½o de resultado: faixa de acento */
 .result-card { border-left: 5px solid var(--primary); }
 .res-label { display: flex; align-items: center; gap: 4px; }
 .res-label svg { flex-shrink: 0; }
 .res-sub { font-size: 10.5px; color: var(--text-subtle); margin-top: 2px; }
 
-/* Linha extra do cartão (mapa + tempo) */
+/* Linha extra do cartï¿½o (mapa + tempo) */
 .result-extra {
   display: flex;
   align-items: center;
@@ -899,7 +899,7 @@ button, input { font-family: inherit; }
   color: var(--text-muted);
 }
 
-/* Histórico local */
+/* Histï¿½rico local */
 .historico {
   background: var(--surface);
   border: 1.5px solid var(--border);
@@ -1009,7 +1009,6 @@ button, input { font-family: inherit; }
 .modal-fechar:hover { background: var(--surface-subtle); color: var(--text-main); }
 
 @media (min-width: 1000px) {
-  .atalhos { display: none; }
   .result-extra { padding: 0 20px 14px; }
   .mapa-container { padding: 0 20px 18px; }
   .mapa-container iframe { height: 280px; }
@@ -1017,8 +1016,12 @@ button, input { font-family: inherit; }
   .estado-chips { max-width: 420px; }
 }
 
-@media (max-width: 420px) {
+/* Atalhos de teclado sÃ£o recurso de desktop: escondidos no celular/tablet */
+@media (max-width: 999px), (pointer: coarse) {
   .atalhos { display: none; }
+}
+
+@media (max-width: 420px) {
   .exemplos { gap: 4px; }
   .chip { font-size: 10px; padding: 4px 8px; }
 }

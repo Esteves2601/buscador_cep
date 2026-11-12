@@ -2,7 +2,7 @@
    Estratégia: rede primeiro (com revalidação) e cache como reserva offline.
    Assim uma atualização nunca fica presa em cache antigo. */
 
-const CACHE = "buscador-cep-v4";
+const CACHE = "buscador-cep-v5";
 
 const SHELL = [
   "/",

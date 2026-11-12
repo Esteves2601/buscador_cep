@@ -111,7 +111,7 @@ function limparLista() {
 
 /* ---------------- Tema ---------------- */
 
-let metaTema = null;
+let metaTema = document.querySelector('meta[name="theme-color"]');
 
 function aplicarTema(tema, salvar = true) {
   const escuro = tema === "escuro";
@@ -121,7 +121,6 @@ function aplicarTema(tema, salvar = true) {
   if (!metaTema) {
     metaTema = document.createElement("meta");
     metaTema.name = "theme-color";
-    metaTema.dataset.dinamico = "1";
     document.head.appendChild(metaTema);
   }
   metaTema.content = escuro ? "#0C120E" : "#236B32";
@@ -132,7 +131,8 @@ function aplicarTema(tema, salvar = true) {
 function temaInicial() {
   const salvo = localStorage.getItem(CHAVE_TEMA);
   if (salvo === "claro" || salvo === "escuro") return salvo;
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "escuro" : "claro";
+  // Padrão do site é o tema claro (o escuro é opção do usuário)
+  return "claro";
 }
 
 function alternarTema() {
