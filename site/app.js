@@ -5,6 +5,8 @@ const $ = (id) => document.getElementById(id);
 const TEMPO_LIMITE = 12000;
 const CHAVE_TEMA = "tema";
 const CHAVE_PWA = "ocultarInstalar";
+const CHAVE_HISTORICO = "historico-cep";
+const LIMITE_HISTORICO = 6;
 
 const REGIOES = {
   AC: "Norte", AP: "Norte", AM: "Norte", PA: "Norte", RO: "Norte", RR: "Norte", TO: "Norte",
@@ -21,6 +23,7 @@ const el = {
   formCep: $("form-cep"),
   formEnd: $("form-end"),
   cep: $("cep"),
+  limparCampo: $("btn-limpar-campo"),
   uf: $("uf"),
   cidade: $("cidade"),
   rua: $("rua"),
@@ -30,20 +33,37 @@ const el = {
   estado: $("estado"),
   estadoTitulo: $("estado-titulo"),
   estadoTexto: $("estado-texto"),
+  estadoChips: $("estado-chips"),
   carregando: $("carregando"),
   lista: $("lista"),
   btnBuscar: $("btn-buscar"),
+  btnLimpar: $("btn-limpar"),
   btnBuscarEnd: $("btn-buscar-end"),
   btnMapa: $("btn-mapa"),
   btnCopiar: $("btn-copiar"),
+  btnMapaEmbed: $("btn-mapa-embed"),
+  mapaContainer: $("mapa-container"),
+  mapaIframe: $("mapa-iframe"),
+  tempo: $("r-tempo"),
+  linhaComplemento: $("linha-complemento"),
   btnTema: $("btn-tema"),
   conexao: $("conexao"),
+  historico: $("historico"),
+  historicoLista: $("historico-lista"),
+  btnLimparHistorico: $("btn-limpar-historico"),
+  toast: $("toast"),
+  toastTexto: $("toast-texto"),
+  modal: $("modal-sobre"),
+  btnSobre: $("btn-sobre"),
+  btnFecharSobre: $("btn-fechar-sobre"),
   pwa: $("pwa"),
   pwaTitulo: $("pwa-titulo"),
   pwaSub: $("pwa-sub"),
   btnInstalar: $("btn-instalar"),
   btnFecharPwa: $("btn-fechar-pwa"),
 };
+
+let ultimoDados = null;
 
 const somenteDigitos = (t) => (t || "").replace(/\D/g, "");
 
@@ -89,7 +109,7 @@ function limparLista() {
   el.lista.innerHTML = "";
 }
 
-/* ---------------- Tema (claro / escuro) ---------------- */
+/* ---------------- Tema ---------------- */
 
 let metaTema = null;
 
@@ -115,12 +135,13 @@ function temaInicial() {
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "escuro" : "claro";
 }
 
-aplicarTema(temaInicial(), false);
-
-el.btnTema.addEventListener("click", () => {
+function alternarTema() {
   const escuroAtual = document.documentElement.classList.contains("dark-mode");
   aplicarTema(escuroAtual ? "claro" : "escuro");
-});
+}
+
+aplicarTema(temaInicial(), false);
+el.btnTema.addEventListener("click", alternarTema);
 
 /* ---------------- Conexão ---------------- */
 
@@ -168,28 +189,180 @@ async function buscarJson(url) {
   }
 }
 
+/* ---------------- Utilidades ---------------- */
+
+async function copiarTexto(texto) {
+  try {
+    await navigator.clipboard.writeText(texto);
+  } catch {
+    const area = document.createElement("textarea");
+    area.value = texto;
+    area.style.position = "fixed";
+    area.style.opacity = "0";
+    document.body.appendChild(area);
+    area.select();
+    try { document.execCommand("copy"); } catch { /* ignora */ }
+    area.remove();
+  }
+}
+
+let toastTimer = null;
+function mostrarToast(mensagem) {
+  el.toastTexto.textContent = mensagem;
+  el.toast.classList.add("visivel");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.toast.classList.remove("visivel"), 2200);
+}
+
+function textoEndereco(d) {
+  const linhas = [];
+  const rua = [d.logradouro, d.complemento].filter(Boolean).join(", ");
+  if (rua) linhas.push(rua);
+  if (d.bairro) linhas.push(d.bairro);
+  linhas.push([d.localidade, d.uf].filter(Boolean).join(" - "));
+  linhas.push("CEP: " + formatarCep(d.cep));
+  if (d.ddd) linhas.push("DDD: (" + d.ddd + ")");
+  if (d.ibge) linhas.push("IBGE: " + d.ibge);
+  if (d.regiao) linhas.push("Região: " + d.regiao);
+  return linhas.filter(Boolean).join("\n");
+}
+
+/* ---------------- Histórico local ---------------- */
+
+function lerHistorico() {
+  try {
+    const bruto = JSON.parse(localStorage.getItem(CHAVE_HISTORICO) || "[]");
+    return Array.isArray(bruto) ? bruto : [];
+  } catch {
+    return [];
+  }
+}
+
+function salvarHistorico(lista) {
+  try {
+    localStorage.setItem(CHAVE_HISTORICO, JSON.stringify(lista.slice(0, LIMITE_HISTORICO)));
+  } catch { /* ignora */ }
+}
+
+function registrarHistorico(d) {
+  const item = {
+    cep: formatarCep(d.cep),
+    endereco: [d.logradouro, d.bairro, d.localidade, d.uf].filter(Boolean).join(" · "),
+    quando: Date.now(),
+  };
+  if (!item.cep) return;
+  const lista = lerHistorico().filter((x) => x.cep !== item.cep);
+  lista.unshift(item);
+  salvarHistorico(lista);
+  renderHistorico();
+}
+
+function renderHistorico() {
+  const lista = lerHistorico();
+  if (!lista.length) {
+    el.historico.classList.add("oculto");
+    return;
+  }
+  el.historico.classList.remove("oculto");
+  el.historicoLista.innerHTML = "";
+
+  lista.forEach((item) => {
+    const li = document.createElement("li");
+    li.className = "historico-item";
+
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "historico-btn";
+
+    const cep = document.createElement("span");
+    cep.className = "historico-cep";
+    cep.textContent = item.cep;
+
+    const end = document.createElement("span");
+    end.className = "historico-end";
+    end.textContent = item.endereco || "";
+
+    btn.append(cep, end);
+    btn.addEventListener("click", () => {
+      mudarAba(true);
+      el.cep.value = item.cep;
+      consultarCep(item.cep);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+
+    li.appendChild(btn);
+    el.historicoLista.appendChild(li);
+  });
+}
+
+el.btnLimparHistorico.addEventListener("click", () => {
+  localStorage.removeItem(CHAVE_HISTORICO);
+  renderHistorico();
+  mostrarToast("Histórico limpo");
+});
+
+/* ---------------- Mapa ---------------- */
+
+function resetarMapa() {
+  el.mapaContainer.classList.add("oculto");
+  el.mapaIframe.src = "about:blank";
+  el.btnMapaEmbed.textContent = "Ver mapa aqui";
+  el.btnMapaEmbed.setAttribute("aria-expanded", "false");
+  el.btnMapaEmbed.dataset.endereco = "";
+}
+
+el.btnMapaEmbed.addEventListener("click", () => {
+  const endereco = el.btnMapaEmbed.dataset.endereco;
+  if (!endereco) return;
+
+  const aberto = !el.mapaContainer.classList.contains("oculto");
+  if (aberto) {
+    el.mapaContainer.classList.add("oculto");
+    el.btnMapaEmbed.textContent = "Ver mapa aqui";
+    el.btnMapaEmbed.setAttribute("aria-expanded", "false");
+    return;
+  }
+
+  if (!String(el.mapaIframe.src).includes("maps.google.com")) {
+    el.mapaIframe.src =
+      "https://maps.google.com/maps?q=" + encodeURIComponent(endereco) + "&z=16&output=embed";
+  }
+  el.mapaContainer.classList.remove("oculto");
+  el.btnMapaEmbed.textContent = "Ocultar mapa";
+  el.btnMapaEmbed.setAttribute("aria-expanded", "true");
+});
+
 /* ---------------- Consulta por CEP ---------------- */
 
-function preencher(dados) {
+function preencher(dados, ms) {
   const uf = dados.uf || "";
-  el.resultado.querySelector(".result-cep").textContent = formatarCep(dados.cep) || "—";
+  const regiao = dados.regiao || REGIOES[uf] || "";
+
+  $("r-cep").textContent = formatarCep(dados.cep) || "—";
   $("r-rua").textContent = dados.logradouro || "—";
   $("r-bairro").textContent = dados.bairro || "—";
   $("r-cidade").textContent = dados.localidade
     ? `${dados.localidade}${uf ? " — " + uf : ""}`
     : "—";
+  $("r-estado").textContent = dados.estado || "";
   $("r-ddd").textContent = dados.ddd ? `(${dados.ddd})` : "—";
   $("r-ibge").textContent = dados.ibge || "—";
-
-  const regiao = REGIOES[uf];
+  $("r-siafi").textContent = dados.siafi ? `SIAFI: ${dados.siafi}` : "";
   $("r-tag").textContent = uf ? `${uf}${regiao ? " · " + regiao : ""}` : "Brasil";
+
+  const complemento = (dados.complemento || "").trim();
+  $("r-complemento").textContent = complemento || "—";
+  el.linhaComplemento.classList.toggle("oculto", !complemento);
 
   const endereco = [dados.logradouro, dados.bairro, dados.localidade, uf]
     .filter(Boolean)
     .join(", ");
+
   el.btnMapa.href =
     "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(endereco);
-  el.btnCopiar.dataset.texto = `${endereco} — CEP ${formatarCep(dados.cep)}`;
+  el.btnMapaEmbed.dataset.endereco = endereco;
+  el.tempo.textContent = ms ? `Consultado em ${ms} ms` : "";
+  ultimoDados = dados;
 }
 
 async function consultarCep(valor) {
@@ -212,9 +385,13 @@ async function consultarCep(valor) {
   status("Consultando o ViaCEP…");
   mostrarCarregando();
   limparLista();
+  resetarMapa();
 
+  const inicio = performance.now();
   try {
     const dados = await buscarJson(`https://viacep.com.br/ws/${digitos}/json/`);
+    const ms = Math.round(performance.now() - inicio);
+
     if (dados.erro) {
       status("CEP não encontrado. Confira os números.", "erro");
       mostrarErro(
@@ -223,11 +400,13 @@ async function consultarCep(valor) {
       );
       return;
     }
-    preencher(dados);
+
+    preencher(dados, ms);
     esconderPainéis();
     el.estado.classList.remove("error");
     el.resultado.classList.remove("oculto");
     status("Endereço localizado com sucesso no ViaCEP.", "ok");
+    registrarHistorico(dados);
   } catch (erro) {
     status(erro.message, "erro");
     mostrarErro("Falha na consulta", erro.message);
@@ -266,6 +445,7 @@ async function consultarEndereco() {
   status("Consultando o ViaCEP…");
   mostrarCarregando();
   limparLista();
+  resetarMapa();
 
   try {
     const url = `https://viacep.com.br/ws/${encodeURIComponent(uf)}/${encodeURIComponent(
@@ -288,23 +468,48 @@ async function consultarEndereco() {
 
     dados.slice(0, 50).forEach((item) => {
       const cep = formatarCep(item.cep);
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.className = "cep-card-item";
-      btn.innerHTML =
-        `<span>` +
-        `<span class="cep-item-cep">${cep}</span><br>` +
-        `<span class="cep-item-rua">${item.logradouro || ""}</span><br>` +
-        `<span class="cep-item-local">${item.bairro || ""} · ${item.localidade || ""}/${item.uf || ""}</span>` +
-        `</span>` +
-        `<svg fill="none" height="16" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="16" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg>`;
-      btn.addEventListener("click", () => {
+
+      const li = document.createElement("li");
+      li.className = "cep-card-item";
+
+      const principal = document.createElement("button");
+      principal.type = "button";
+      principal.className = "cep-item-main";
+
+      const cepEl = document.createElement("span");
+      cepEl.className = "cep-item-cep";
+      cepEl.textContent = cep;
+
+      const ruaEl = document.createElement("span");
+      ruaEl.className = "cep-item-rua";
+      ruaEl.textContent = item.logradouro || "";
+
+      const localEl = document.createElement("span");
+      localEl.className = "cep-item-local";
+      localEl.textContent = `${item.bairro || ""} · ${item.localidade || ""}/${item.uf || ""}`;
+
+      principal.append(cepEl, document.createElement("br"), ruaEl,
+                       document.createElement("br"), localEl);
+      principal.addEventListener("click", () => {
         mudarAba(true);
         el.cep.value = cep;
         consultarCep(cep);
         window.scrollTo({ top: 0, behavior: "smooth" });
       });
-      el.lista.appendChild(btn);
+
+      const copiar = document.createElement("button");
+      copiar.type = "button";
+      copiar.className = "cep-item-copy";
+      copiar.setAttribute("aria-label", `Copiar o CEP ${cep}`);
+      copiar.innerHTML =
+        '<svg fill="none" height="16" width="16" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>';
+      copiar.addEventListener("click", async () => {
+        await copiarTexto(cep);
+        mostrarToast(`CEP ${cep} copiado`);
+      });
+
+      li.append(principal, copiar);
+      el.lista.appendChild(li);
     });
   } catch (erro) {
     status(erro.message, "erro");
@@ -327,44 +532,85 @@ el.formEnd.addEventListener("submit", (e) => {
   consultarEndereco();
 });
 
+function atualizarBotaoLimparCampo() {
+  el.limparCampo.classList.toggle("visivel", el.cep.value.length > 0);
+}
+
 el.cep.addEventListener("input", () => {
   el.cep.value = formatarCep(el.cep.value);
   el.cep.classList.remove("erro");
+  atualizarBotaoLimparCampo();
 });
 
 el.uf.addEventListener("input", () => {
   el.uf.value = el.uf.value.replace(/[^a-zA-Z]/g, "").toUpperCase();
 });
 
-$("btn-limpar").addEventListener("click", () => {
+function limparFormulario() {
   el.cep.value = "";
   el.cep.classList.remove("erro");
   limparLista();
   el.estado.classList.remove("error");
+  el.tempo.textContent = "";
+  resetarMapa();
+  atualizarBotaoLimparCampo();
   status("Digite um CEP e clique em Buscar.");
   mostrarEstado(
     "Pronto para consultar",
     "Informe o CEP para carregar logradouro, bairro, cidade, DDD e código IBGE oficial."
   );
   el.cep.focus();
+}
+
+el.btnLimpar.addEventListener("click", limparFormulario);
+el.limparCampo.addEventListener("click", limparFormulario);
+
+document.querySelectorAll(".chip[data-cep]").forEach((chip) => {
+  chip.addEventListener("click", () => {
+    el.cep.value = formatarCep(chip.dataset.cep);
+    atualizarBotaoLimparCampo();
+    consultarCep(chip.dataset.cep);
+  });
 });
 
 el.btnCopiar.addEventListener("click", async () => {
-  const texto = el.btnCopiar.dataset.texto || "";
-  if (!texto) return;
-  try {
-    await navigator.clipboard.writeText(texto);
-  } catch {
-    const area = document.createElement("textarea");
-    area.value = texto;
-    document.body.appendChild(area);
-    area.select();
-    document.execCommand("copy");
-    area.remove();
-  }
+  if (!ultimoDados) return;
+  await copiarTexto(textoEndereco(ultimoDados));
   const original = el.btnCopiar.innerHTML;
   el.btnCopiar.textContent = "Copiado!";
+  mostrarToast("Endereço copiado");
   setTimeout(() => { el.btnCopiar.innerHTML = original; }, 2000);
+});
+
+/* ---------------- Atalhos de teclado ---------------- */
+
+document.addEventListener("keydown", (evento) => {
+  if (el.modal.open) return;
+  if (evento.key === "Escape") {
+    evento.preventDefault();
+    limparFormulario();
+    return;
+  }
+  if (evento.altKey && (evento.key === "t" || evento.key === "T")) {
+    evento.preventDefault();
+    alternarTema();
+  }
+});
+
+/* ---------------- Modal Sobre ---------------- */
+
+el.btnSobre.addEventListener("click", () => {
+  if (typeof el.modal.showModal === "function") {
+    el.modal.showModal();
+  } else {
+    el.modal.setAttribute("open", "");
+  }
+});
+
+el.btnFecharSobre.addEventListener("click", () => el.modal.close());
+
+el.modal.addEventListener("click", (evento) => {
+  if (evento.target === el.modal) el.modal.close();
 });
 
 /* ---------------- Atalhos de URL ---------------- */
@@ -376,6 +622,7 @@ if (parametros.get("aba") === "endereco") mudarAba(false);
 const cepDaUrl = parametros.get("cep");
 if (cepDaUrl && somenteDigitos(cepDaUrl).length === 8) {
   el.cep.value = formatarCep(cepDaUrl);
+  atualizarBotaoLimparCampo();
   consultarCep(cepDaUrl);
 }
 
@@ -430,7 +677,7 @@ window.addEventListener("appinstalled", () => {
 
 if (/iphone|ipad|ipod/i.test(navigator.userAgent) && !instalado) {
   el.pwaTitulo.textContent = "Instalar no iPhone";
-  el.pwaSub.textContent = 'Toque em Compartilhar → "Adicionar à Tela de Início"';
+  el.pwaSub.textContent = 'Compartilhar → "Adicionar à Tela de Início"';
   el.btnInstalar.textContent = "Entendi";
   mostrarPwa();
 }
@@ -438,7 +685,6 @@ if (/iphone|ipad|ipod/i.test(navigator.userAgent) && !instalado) {
 if ("serviceWorker" in navigator) {
   const tinhaController = Boolean(navigator.serviceWorker.controller);
 
-  // Quando um novo service worker assume, recarrega uma vez para pegar o visual novo.
   navigator.serviceWorker.addEventListener("controllerchange", () => {
     if (tinhaController) location.reload();
   });
@@ -449,3 +695,8 @@ if ("serviceWorker" in navigator) {
       .catch(() => {});
   });
 }
+
+/* ---------------- Inicialização ---------------- */
+
+renderHistorico();
+atualizarBotaoLimparCampo();

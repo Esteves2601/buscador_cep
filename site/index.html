@@ -23,8 +23,8 @@
   <meta name="apple-mobile-web-app-title" content="Buscador de CEP">
   <link href="https://fonts.googleapis.com" rel="preconnect">
   <link crossorigin href="https://fonts.gstatic.com" rel="preconnect">
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="estilo.css?v=3">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="estilo.css?v=4">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -65,7 +65,7 @@
         <svg fill="currentColor" height="15" viewBox="0 0 24 24" width="15" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"></path></svg>
         Código no GitHub
       </a>
-      <button id="btn-tema" class="icon-btn" type="button" aria-label="Alternar tema claro e escuro" aria-pressed="false">
+      <button id="btn-tema" class="icon-btn" type="button" aria-label="Alternar tema claro e escuro (Alt+T)" aria-pressed="false">
         <svg class="ic-sol" fill="none" width="18" height="18" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
         <svg class="ic-lua" fill="none" width="18" height="18" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
       </button>
@@ -91,8 +91,14 @@
             <span>CEP</span>
             <span class="hint">8 dígitos</span>
           </label>
-          <input class="input-box" id="cep" name="cep" type="text" inputmode="numeric"
-                 autocomplete="postal-code" maxlength="9" placeholder="Ex: 01310-100" required>
+          <div class="input-wrap">
+            <svg class="input-icon" fill="none" width="20" height="20" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+            <input class="input-box input-com-icone" id="cep" name="cep" type="text" inputmode="numeric"
+                   autocomplete="postal-code" maxlength="9" placeholder="Ex: 01310-100" required>
+            <button class="input-clear" id="btn-limpar-campo" type="button" aria-label="Limpar o CEP">
+              <svg fill="none" width="16" height="16" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg>
+            </button>
+          </div>
         </div>
         <div class="button-row">
           <button class="btn btn-main" type="submit" id="btn-buscar">
@@ -100,6 +106,12 @@
             Buscar
           </button>
           <button class="btn btn-clear" type="button" id="btn-limpar">Limpar</button>
+        </div>
+        <div class="exemplos">
+          <span class="exemplos-rotulo">Exemplos:</span>
+          <button class="chip" type="button" data-cep="01310100">01310-100 · Paulista</button>
+          <button class="chip" type="button" data-cep="20040002">20040-002 · Rio</button>
+          <button class="chip" type="button" data-cep="70040010">70040-010 · Brasília</button>
         </div>
       </form>
 
@@ -135,6 +147,12 @@
         <svg class="ic-erro" fill="none" height="14" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="14" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" x2="12" y1="8" y2="12"></line><line x1="12" x2="12.01" y1="16" y2="16"></line></svg>
         <span id="status-texto">Digite um CEP e clique em Buscar.</span>
       </div>
+
+      <p class="atalhos" aria-hidden="true">
+        <span><kbd>Enter</kbd> buscar</span>
+        <span><kbd>Esc</kbd> limpar</span>
+        <span><kbd>Alt</kbd>+<kbd>T</kbd> tema</span>
+      </p>
     </section>
 
     <section class="panel-result" aria-label="Resultado da consulta">
@@ -145,35 +163,49 @@
         </div>
         <div class="result-body">
           <div class="result-col-full">
-            <div class="res-label">Logradouro / Rua</div>
+            <div class="res-label"><svg fill="none" width="12" height="12" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> Logradouro / Rua</div>
             <div class="res-val destaque" id="r-rua">—</div>
           </div>
+          <div class="result-col-full oculto" id="linha-complemento">
+            <div class="res-label"><svg fill="none" width="12" height="12" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 2 2 7l10 5 10-5-10-5z"></path><path d="m2 17 10 5 10-5"></path></svg> Complemento</div>
+            <div class="res-val" id="r-complemento">—</div>
+          </div>
           <div>
-            <div class="res-label">Bairro</div>
+            <div class="res-label"><svg fill="none" width="12" height="12" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="2" width="16" height="20" rx="2"></rect><path d="M9 22v-4h6v4"></path></svg> Bairro</div>
             <div class="res-val" id="r-bairro">—</div>
           </div>
           <div>
-            <div class="res-label">Cidade / UF</div>
+            <div class="res-label"><svg fill="none" width="12" height="12" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 21h18M5 21V7l7-4 7 4v14"></path></svg> Cidade / UF</div>
             <div class="res-val" id="r-cidade">—</div>
+            <div class="res-sub" id="r-estado"></div>
           </div>
           <div>
-            <div class="res-label">DDD</div>
+            <div class="res-label"><svg fill="none" width="12" height="12" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"></path></svg> DDD</div>
             <div class="res-val mono" id="r-ddd">—</div>
           </div>
           <div>
-            <div class="res-label">Código IBGE</div>
+            <div class="res-label"><svg fill="none" width="12" height="12" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20.59 13.41 13.42 20.58a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><circle cx="7" cy="7" r="1.5"></circle></svg> Código IBGE</div>
             <div class="res-val mono" id="r-ibge">—</div>
+            <div class="res-sub" id="r-siafi"></div>
           </div>
         </div>
         <div class="result-foot-actions">
           <a class="btn btn-clear btn-foot" id="btn-mapa" href="#" target="_blank" rel="noopener noreferrer">
             <svg fill="none" height="14" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="14" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-            Ver no mapa
+            Abrir no Google Maps
           </a>
           <button class="btn btn-main btn-foot" type="button" id="btn-copiar">
             <svg fill="none" height="14" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="14" aria-hidden="true"><rect height="13" rx="2" ry="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
             Copiar dados
           </button>
+        </div>
+        <div class="result-extra">
+          <button class="link-btn" type="button" id="btn-mapa-embed" aria-expanded="false" aria-controls="mapa-container">Ver mapa aqui</button>
+          <span class="tempo" id="r-tempo"></span>
+        </div>
+        <div class="mapa-container oculto" id="mapa-container">
+          <iframe id="mapa-iframe" title="Mapa do endereço consultado" loading="lazy"
+                  referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
         </div>
       </div>
 
@@ -184,6 +216,20 @@
         </div>
         <strong id="estado-titulo">Pronto para consultar</strong>
         <p id="estado-texto">Informe o CEP para carregar logradouro, bairro, cidade, DDD e código IBGE oficial.</p>
+        <div class="estado-chips" id="estado-chips">
+          <span class="estado-chip">
+            <svg fill="none" width="16" height="16" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 21h18M5 21V7l7-4 7 4v14"></path></svg>
+            Logradouro
+          </span>
+          <span class="estado-chip">
+            <svg fill="none" width="16" height="16" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+            DDD
+          </span>
+          <span class="estado-chip">
+            <svg fill="none" width="16" height="16" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20.59 13.41 13.42 20.58a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><circle cx="7" cy="7" r="1.5"></circle></svg>
+            IBGE
+          </span>
+        </div>
       </div>
 
       <div class="result-card skeleton-card oculto" id="carregando" aria-hidden="true">
@@ -196,13 +242,22 @@
       </div>
 
       <ul class="cep-list" id="lista"></ul>
+
+      <section class="historico oculto" id="historico" aria-label="Últimas consultas">
+        <div class="historico-topo">
+          <h3>Últimas consultas</h3>
+          <button class="link-btn" type="button" id="btn-limpar-historico">Limpar</button>
+        </div>
+        <ul class="historico-lista" id="historico-lista"></ul>
+        <p class="historico-nota">Salvo apenas neste navegador.</p>
+      </section>
     </section>
 
   </main>
 
   <footer class="app-footer">
     <span>Dados: <a href="https://viacep.com.br" target="_blank" rel="noopener noreferrer">ViaCEP</a> · sem chave, sem cadastro</span>
-    <span>Projeto de <a href="https://estevestec.com.br" target="_blank" rel="noopener noreferrer">EstevesTec</a> · <a href="https://github.com/Esteves2601/buscador_cep" target="_blank" rel="noopener noreferrer">código no GitHub</a></span>
+    <span>Projeto de <a href="https://estevestec.com.br" target="_blank" rel="noopener noreferrer">EstevesTec</a> · <a href="https://github.com/Esteves2601/buscador_cep" target="_blank" rel="noopener noreferrer">código no GitHub</a> · <button class="link-btn" type="button" id="btn-sobre">Sobre</button></span>
     <span>Contato: <a href="mailto:contatos@estevestec.com.br">contatos@estevestec.com.br</a></span>
   </footer>
 
@@ -215,7 +270,7 @@
     </div>
     <div class="pwa-text">
       <strong id="pwa-titulo">Instalar aplicativo</strong>
-      <span id="pwa-sub">Acesso instantâneo e offline</span>
+      <span id="pwa-sub">Abre mais rápido; as consultas precisam de internet</span>
     </div>
   </div>
   <div class="pwa-actions">
@@ -224,7 +279,46 @@
   </div>
 </div>
 
-  <script>
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <svg fill="none" height="16" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" width="16" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+  <span id="toast-texto">Copiado!</span>
+</div>
+
+<dialog class="modal" id="modal-sobre" aria-labelledby="sobre-titulo">
+  <div class="modal-topo">
+    <h2 id="sobre-titulo">Sobre o Buscador de CEP</h2>
+    <button class="modal-fechar" type="button" id="btn-fechar-sobre" aria-label="Fechar">×</button>
+  </div>
+
+  <p>Consulta de endereços a partir do CEP — e o caminho inverso — usando os dados
+  públicos do <a href="https://viacep.com.br" target="_blank" rel="noopener noreferrer">ViaCEP</a>.</p>
+
+  <h3>Como funciona</h3>
+  <p>O navegador consulta diretamente a API pública do ViaCEP:</p>
+  <ul>
+    <li><code>viacep.com.br/ws/CEP/json/</code> — CEP → endereço</li>
+    <li><code>viacep.com.br/ws/UF/CIDADE/RUA/json/</code> — endereço → CEP</li>
+  </ul>
+  <p>Não há servidor próprio: as consultas saem do seu navegador e voltam para a tela.</p>
+
+  <h3>Privacidade</h3>
+  <ul>
+    <li>Nada é enviado para servidores da EstevesTec — o site é estático.</li>
+    <li>O histórico fica salvo <strong>apenas no seu navegador</strong> (localStorage).</li>
+    <li>O mapa só carrega o Google Maps quando você toca em "Ver mapa aqui".</li>
+  </ul>
+
+  <h3>Offline</h3>
+  <p>Instalado como aplicativo, o app abre sem internet, mas as consultas
+  precisam de conexão, porque dependem do ViaCEP.</p>
+
+  <h3>Créditos</h3>
+  <p>Projeto de <a href="https://estevestec.com.br" target="_blank" rel="noopener noreferrer">EstevesTec</a> ·
+  <a href="https://github.com/Esteves2601/buscador_cep" target="_blank" rel="noopener noreferrer">código no GitHub</a> ·
+  contato <a href="mailto:contatos@estevestec.com.br">contatos@estevestec.com.br</a></p>
+</dialog>
+
+<script>
   /* Auto-recuperação: se o CSS não aplicar (cache/service worker antigo),
      recarrega a folha de estilo com uma URL única, ignorando o cache. */
   (function () {
@@ -249,6 +343,6 @@
     });
   })();
 </script>
-<script src="app.js?v=3" defer></script>
+<script src="app.js?v=4" defer></script>
 </body>
 </html>

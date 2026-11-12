@@ -138,6 +138,9 @@ button, input { font-family: inherit; }
   justify-content: space-between;
   gap: 12px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  position: sticky;
+  top: 0;
+  z-index: 25;
 }
 
 .brand-row { display: flex; align-items: center; gap: 10px; min-width: 0; }
@@ -551,23 +554,47 @@ button, input { font-family: inherit; }
   background-color: var(--surface);
   border: 1.5px solid var(--border);
   border-radius: var(--radius-md);
-  padding: 10px 12px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 10px;
-  cursor: pointer;
-  text-align: left;
-  width: 100%;
-  font-family: inherit;
-  color: inherit;
+  gap: 6px;
+  padding: 4px 6px 4px 0;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 .cep-card-item:hover,
-.cep-card-item:focus-visible {
+.cep-card-item:focus-within {
   border-color: var(--primary);
   background-color: var(--primary-subtle);
-  outline: none;
 }
+
+.cep-item-main {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: 0;
+  text-align: left;
+  font-family: inherit;
+  color: inherit;
+  padding: 6px 4px 6px 12px;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+.cep-item-main:focus-visible { outline: 2px solid var(--border-focus); outline-offset: -2px; }
+
+.cep-item-copy {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--primary);
+  cursor: pointer;
+}
+.cep-item-copy:hover { background: var(--surface); }
+.cep-item-copy:focus-visible { outline: 2px solid var(--border-focus); outline-offset: 1px; }
 
 .cep-item-cep {
   font-family: var(--font-mono);
@@ -735,4 +762,263 @@ button, input { font-family: inherit; }
   }
 
   .pwa-box { max-width: 680px; bottom: 20px; }
+}
+
+/* ==========================================================================
+   Melhorias (Onda 1 + extras): atalhos, chips, histórico, mapa, toast, modal
+   ========================================================================== */
+
+:root { --font-label: 'Space Grotesk', var(--font-sans); }
+
+.form-label,
+.res-label,
+.result-tag,
+.estado-chip,
+.exemplos-rotulo,
+.historico-topo h3,
+.atalhos {
+  font-family: var(--font-label);
+}
+
+/* Input com ícone e botão de limpar */
+.input-wrap { position: relative; display: flex; align-items: center; }
+.input-icon {
+  position: absolute;
+  left: 13px;
+  color: var(--text-subtle);
+  pointer-events: none;
+}
+.input-com-icone { padding-left: 42px; padding-right: 44px; }
+.input-clear {
+  position: absolute;
+  right: 7px;
+  width: 32px;
+  height: 32px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--text-subtle);
+  cursor: pointer;
+}
+.input-clear:hover { background: var(--surface-subtle); color: var(--text-main); }
+.input-clear:focus-visible { outline: 2px solid var(--border-focus); outline-offset: 1px; }
+.input-clear.visivel { display: inline-flex; }
+
+/* Chips de exemplo */
+.exemplos { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.exemplos-rotulo { font-size: 11px; font-weight: 600; color: var(--text-subtle); }
+.chip {
+  font-family: var(--font-label);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.chip:hover { background: var(--primary); border-color: var(--primary); color: #FFFFFF; }
+.chip:focus-visible { outline: 2px solid var(--border-focus); outline-offset: 1px; }
+
+/* Estado vazio: chips informativos */
+.estado-chips {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  width: 100%;
+  margin-top: 6px;
+}
+.estado-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 4px;
+  border-radius: var(--radius-md);
+  background: var(--surface-subtle);
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--text-main);
+  text-align: center;
+}
+.estado-chip svg { color: var(--primary); }
+
+/* Cartão de resultado: faixa de acento */
+.result-card { border-left: 5px solid var(--primary); }
+.res-label { display: flex; align-items: center; gap: 4px; }
+.res-label svg { flex-shrink: 0; }
+.res-sub { font-size: 10.5px; color: var(--text-subtle); margin-top: 2px; }
+
+/* Linha extra do cartão (mapa + tempo) */
+.result-extra {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 0 14px 12px;
+}
+.link-btn {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  font-weight: 600;
+  color: var(--primary);
+  text-decoration: underline;
+  cursor: pointer;
+}
+.link-btn:focus-visible { outline: 2px solid var(--border-focus); outline-offset: 2px; border-radius: 3px; }
+.tempo { font-family: var(--font-mono); font-size: 10.5px; color: var(--text-subtle); }
+
+.mapa-container { padding: 0 14px 14px; }
+.mapa-container iframe {
+  width: 100%;
+  height: 220px;
+  border: 0;
+  border-radius: var(--radius-md);
+  display: block;
+  background: var(--surface-subtle);
+}
+
+/* Atalhos de teclado */
+.atalhos { display: flex; flex-wrap: wrap; gap: 10px; font-size: 10.5px; color: var(--text-subtle); }
+.atalhos kbd {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  padding: 1px 5px;
+  color: var(--text-muted);
+}
+
+/* Histórico local */
+.historico {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 12px 14px;
+}
+.historico-topo { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 6px; }
+.historico-topo h3 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
+.historico-lista { list-style: none; display: flex; flex-direction: column; }
+.historico-item + .historico-item { border-top: 1px solid var(--border-subtle); }
+.historico-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 2px;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  color: inherit;
+  min-height: 40px;
+}
+.historico-btn:focus-visible { outline: 2px solid var(--border-focus); outline-offset: -2px; border-radius: var(--radius-sm); }
+.historico-cep { font-family: var(--font-mono); font-weight: 700; color: var(--primary); font-size: 12.5px; flex-shrink: 0; }
+.historico-end {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.historico-btn:hover .historico-end { color: var(--text-main); }
+.historico-nota { font-size: 10.5px; color: var(--text-subtle); margin-top: 6px; }
+
+/* Toast */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 96px;
+  transform: translate(-50%, 12px);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--text-main);
+  color: var(--bg-canvas);
+  padding: 10px 16px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: var(--shadow-lg);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.toast.visivel { opacity: 1; transform: translate(-50%, 0); }
+
+/* Modal Sobre */
+.modal {
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  max-width: 560px;
+  width: calc(100% - 32px);
+  max-height: 85vh;
+  overflow-y: auto;
+  background: var(--surface);
+  color: var(--text-main);
+  box-shadow: var(--shadow-lg);
+}
+.modal::backdrop { background: rgba(12, 18, 14, 0.55); }
+.modal-topo { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.modal h2 { font-size: 18px; font-weight: 800; }
+.modal h3 {
+  font-family: var(--font-label);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--primary);
+  margin: 16px 0 4px;
+}
+.modal p, .modal li { font-size: 13px; color: var(--text-muted); }
+.modal ul { margin: 4px 0 0 18px; }
+.modal code {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  background: var(--surface-subtle);
+  padding: 1px 5px;
+  border-radius: 4px;
+  color: var(--text-main);
+}
+.modal a { color: var(--primary); }
+.modal-fechar {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+.modal-fechar:hover { background: var(--surface-subtle); color: var(--text-main); }
+
+@media (min-width: 1000px) {
+  .atalhos { display: none; }
+  .result-extra { padding: 0 20px 14px; }
+  .mapa-container { padding: 0 20px 18px; }
+  .mapa-container iframe { height: 280px; }
+  .historico { padding: 14px 18px; }
+  .estado-chips { max-width: 420px; }
+}
+
+@media (max-width: 420px) {
+  .atalhos { display: none; }
+  .exemplos { gap: 4px; }
+  .chip { font-size: 10px; padding: 4px 8px; }
 }
