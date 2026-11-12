@@ -2,11 +2,12 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Buscador de CEP — EstevesTec</title>
   <meta name="description" content="Consulte endereços pelo CEP ou descubra o CEP pelo endereço. Dados oficiais do ViaCEP, sem cadastro.">
   <link rel="canonical" href="https://cep.estevestec.com.br/">
-  <meta name="theme-color" content="#2F7D33">
+  <meta name="theme-color" content="#236B32" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0C120E" media="(prefers-color-scheme: dark)">
   <meta property="og:title" content="Buscador de CEP">
   <meta property="og:description" content="CEP → Endereço e Endereço → CEP, direto do ViaCEP.">
   <meta property="og:type" content="website">
@@ -20,6 +21,9 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Buscador de CEP">
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link crossorigin href="https://fonts.gstatic.com" rel="preconnect">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="estilo.css">
   <script type="application/ld+json">
   {
@@ -42,83 +46,184 @@
   </script>
 </head>
 <body>
-  <header class="topo">
-    <h1>Buscador de CEP</h1>
-    <p>Consulta de endereços via ViaCEP</p>
+<div class="app-shell">
+
+  <header class="app-header">
+    <div class="brand-row">
+      <div class="brand-icon-box" aria-hidden="true">
+        <svg fill="none" height="18" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" width="18"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+      </div>
+      <div class="brand-text">
+        <h1 class="brand-title">Buscador de CEP</h1>
+        <p class="brand-subtitle">Consulta de endereços via ViaCEP</p>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <span id="conexao" class="conn-pill"><span class="conn-dot" aria-hidden="true"></span> ViaCEP Online</span>
+      <a class="btn btn-clear btn-github" href="https://github.com/Esteves2601/buscador_cep" target="_blank" rel="noopener noreferrer">
+        <svg fill="currentColor" height="15" viewBox="0 0 24 24" width="15" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"></path></svg>
+        Código no GitHub
+      </a>
+      <button id="btn-tema" class="icon-btn" type="button" aria-label="Alternar tema claro e escuro" aria-pressed="false">
+        <svg class="ic-sol" fill="none" width="18" height="18" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+        <svg class="ic-lua" fill="none" width="18" height="18" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      </button>
+    </div>
   </header>
 
-  <main class="container">
-    <nav class="abas" role="tablist" aria-label="Tipo de consulta">
-      <button id="aba-cep" class="aba ativa" role="tab" aria-selected="true" aria-controls="painel-cep" type="button">CEP → Endereço</button>
-      <button id="aba-end" class="aba" role="tab" aria-selected="false" aria-controls="painel-end" type="button">Endereço → CEP</button>
-    </nav>
+  <main class="app-main">
 
-    <!-- Aba 1: CEP -> Endereço -->
-    <section id="painel-cep" class="painel" role="tabpanel" aria-labelledby="aba-cep">
-      <form id="form-cep" novalidate>
-        <label for="cep">CEP</label>
-        <input id="cep" name="cep" type="text" inputmode="numeric" autocomplete="postal-code"
-               maxlength="9" placeholder="Ex: 01310-100" required>
-        <div class="botoes">
-          <button class="btn primario" type="submit" id="btn-cep">Buscar</button>
-          <button class="btn secundario" type="button" id="btn-limpar">Limpar</button>
+    <section class="panel" aria-label="Formulário de consulta">
+      <div class="panel-heading">
+        <h2>Consulta de Endereço</h2>
+        <p>Localize informações cadastrais completas no banco de dados.</p>
+      </div>
+
+      <div class="mode-tab-grid" role="tablist" aria-label="Modo de consulta">
+        <button class="mode-tab active" id="tab-cep" role="tab" aria-selected="true" aria-controls="form-cep" type="button">CEP → Endereço</button>
+        <button class="mode-tab" id="tab-end" role="tab" aria-selected="false" aria-controls="form-end" type="button">Endereço → CEP</button>
+      </div>
+
+      <form id="form-cep" class="form" role="tabpanel" aria-labelledby="tab-cep" novalidate>
+        <div class="form-group">
+          <label class="form-label" for="cep">
+            <span>CEP</span>
+            <span class="hint">8 dígitos</span>
+          </label>
+          <input class="input-box" id="cep" name="cep" type="text" inputmode="numeric"
+                 autocomplete="postal-code" maxlength="9" placeholder="Ex: 01310-100" required>
+        </div>
+        <div class="button-row">
+          <button class="btn btn-main" type="submit" id="btn-buscar">
+            <svg fill="none" height="16" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" width="16" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
+            Buscar
+          </button>
+          <button class="btn btn-clear" type="button" id="btn-limpar">Limpar</button>
         </div>
       </form>
 
-      <p id="status-cep" class="status" role="status" aria-live="polite">Digite um CEP e clique em Buscar.</p>
-
-      <div id="resultado" class="cartao oculto">
-        <dl class="dados">
-          <div><dt>Rua</dt><dd id="r-rua">—</dd></div>
-          <div><dt>Bairro</dt><dd id="r-bairro">—</dd></div>
-          <div><dt>Cidade</dt><dd id="r-cidade">—</dd></div>
-          <div><dt>UF</dt><dd id="r-uf">—</dd></div>
-          <div><dt>DDD</dt><dd id="r-ddd">—</dd></div>
-          <div><dt>IBGE</dt><dd id="r-ibge">—</dd></div>
-          <div><dt>CEP</dt><dd id="r-cep">—</dd></div>
-        </dl>
-        <div class="botoes">
-          <a id="btn-mapa" class="btn secundario" href="#" target="_blank" rel="noopener noreferrer">Ver no mapa</a>
-          <button id="btn-copiar" class="btn secundario" type="button">Copiar endereço</button>
+      <form id="form-end" class="form oculto" role="tabpanel" aria-labelledby="tab-end" novalidate>
+        <div class="grid-uf-city">
+          <div class="form-group">
+            <label class="form-label" for="uf">UF</label>
+            <input class="input-box" id="uf" name="uf" type="text" maxlength="2"
+                   autocomplete="address-level1" placeholder="SP" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="cidade">Cidade</label>
+            <input class="input-box input-text" id="cidade" name="cidade" type="text" maxlength="60"
+                   autocomplete="address-level2" placeholder="São Paulo" required>
+          </div>
         </div>
+        <div class="form-group">
+          <label class="form-label" for="rua">
+            <span>Logradouro / Rua</span>
+            <span class="hint">mín. 3 letras</span>
+          </label>
+          <input class="input-box input-text" id="rua" name="rua" type="text" maxlength="60"
+                 autocomplete="address-line1" placeholder="Avenida Paulista" required>
+        </div>
+        <div class="button-row single">
+          <button class="btn btn-main" type="submit" id="btn-buscar-end">Buscar CEP</button>
+        </div>
+      </form>
+
+      <div class="status-msg" id="status" role="status" aria-live="polite">
+        <svg class="ic-info" fill="none" height="14" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="14" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" x2="12" y1="16" y2="12"></line><line x1="12" x2="12.01" y1="8" y2="8"></line></svg>
+        <svg class="ic-ok" fill="none" height="14" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" width="14" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        <svg class="ic-erro" fill="none" height="14" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="14" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" x2="12" y1="8" y2="12"></line><line x1="12" x2="12.01" y1="16" y2="16"></line></svg>
+        <span id="status-texto">Digite um CEP e clique em Buscar.</span>
       </div>
     </section>
 
-    <!-- Aba 2: Endereço -> CEP -->
-    <section id="painel-end" class="painel oculto" role="tabpanel" aria-labelledby="aba-end">
-      <form id="form-end" novalidate>
-        <label for="uf">UF (2 letras)</label>
-        <input id="uf" name="uf" type="text" maxlength="2" placeholder="Ex: SP" autocapitalize="characters" required>
-
-        <label for="cidade">Cidade</label>
-        <input id="cidade" name="cidade" type="text" maxlength="60" placeholder="Ex: São Paulo" required>
-
-        <label for="rua">Rua (mínimo 3 letras)</label>
-        <input id="rua" name="rua" type="text" maxlength="60" placeholder="Ex: Avenida Paulista" required>
-
-        <div class="botoes">
-          <button class="btn primario" type="submit" id="btn-end">Buscar CEP</button>
+    <section class="panel-result" aria-label="Resultado da consulta">
+      <div class="result-card oculto" id="resultado">
+        <div class="result-header">
+          <span class="result-cep" id="r-cep">—</span>
+          <span class="result-tag" id="r-tag">—</span>
         </div>
-      </form>
-      <p id="status-end" class="status" role="status" aria-live="polite">Informe UF, cidade e rua.</p>
-      <ul id="lista" class="lista"></ul>
+        <div class="result-body">
+          <div class="result-col-full">
+            <div class="res-label">Logradouro / Rua</div>
+            <div class="res-val destaque" id="r-rua">—</div>
+          </div>
+          <div>
+            <div class="res-label">Bairro</div>
+            <div class="res-val" id="r-bairro">—</div>
+          </div>
+          <div>
+            <div class="res-label">Cidade / UF</div>
+            <div class="res-val" id="r-cidade">—</div>
+          </div>
+          <div>
+            <div class="res-label">DDD</div>
+            <div class="res-val mono" id="r-ddd">—</div>
+          </div>
+          <div>
+            <div class="res-label">Código IBGE</div>
+            <div class="res-val mono" id="r-ibge">—</div>
+          </div>
+        </div>
+        <div class="result-foot-actions">
+          <a class="btn btn-clear btn-foot" id="btn-mapa" href="#" target="_blank" rel="noopener noreferrer">
+            <svg fill="none" height="14" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="14" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+            Ver no mapa
+          </a>
+          <button class="btn btn-main btn-foot" type="button" id="btn-copiar">
+            <svg fill="none" height="14" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="14" aria-hidden="true"><rect height="13" rx="2" ry="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            Copiar dados
+          </button>
+        </div>
+      </div>
+
+      <div class="empty-card" id="estado">
+        <div class="empty-icon" aria-hidden="true">
+          <svg class="ic-estado-map" fill="none" height="22" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="22"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" x2="8" y1="2" y2="18"></line><line x1="16" x2="16" y1="6" y2="22"></line></svg>
+          <svg class="ic-estado-alerta" fill="none" height="22" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="22"><circle cx="12" cy="12" r="10"></circle><line x1="15" x2="9" y1="9" y2="15"></line><line x1="9" x2="15" y1="9" y2="15"></line></svg>
+        </div>
+        <strong id="estado-titulo">Pronto para consultar</strong>
+        <p id="estado-texto">Informe o CEP para carregar logradouro, bairro, cidade, DDD e código IBGE oficial.</p>
+      </div>
+
+      <div class="result-card skeleton-card oculto" id="carregando" aria-hidden="true">
+        <div class="skeleton-head">
+          <div class="skeleton-bar" style="width: 100px; height: 20px;"></div>
+          <div class="skeleton-bar" style="width: 60px; height: 20px;"></div>
+        </div>
+        <div class="skeleton-bar" style="width: 80%; height: 16px;"></div>
+        <div class="skeleton-bar" style="width: 50%; height: 16px;"></div>
+      </div>
+
+      <ul class="cep-list" id="lista"></ul>
     </section>
+
   </main>
 
-  <footer class="rodape">
-    <p>Dados: <a href="https://viacep.com.br" target="_blank" rel="noopener noreferrer">ViaCEP</a> · sem chave, sem cadastro</p>
-    <p>Projeto de <a href="https://estevestec.com.br" target="_blank" rel="noopener noreferrer">EstevesTec</a> · <a href="https://github.com/Esteves2601/buscador_cep" target="_blank" rel="noopener noreferrer">código no GitHub</a></p>
-    <p>Contato: <a href="mailto:contatos@estevestec.com.br">contatos@estevestec.com.br</a></p>
+  <footer class="app-footer">
+    <span>Dados: <a href="https://viacep.com.br" target="_blank" rel="noopener noreferrer">ViaCEP</a> · sem chave, sem cadastro</span>
+    <span>Projeto de <a href="https://estevestec.com.br" target="_blank" rel="noopener noreferrer">EstevesTec</a> · <a href="https://github.com/Esteves2601/buscador_cep" target="_blank" rel="noopener noreferrer">código no GitHub</a></span>
+    <span>Contato: <a href="mailto:contatos@estevestec.com.br">contatos@estevestec.com.br</a></span>
   </footer>
 
-  <div id="instalar" class="instalar oculto" role="region" aria-label="Instalar aplicativo">
-    <p id="instalar-texto">Instale o Buscador de CEP no seu celular para usar como aplicativo.</p>
-    <div class="instalar-acoes">
-      <button id="btn-instalar" class="btn primario" type="button">Instalar</button>
-      <button id="btn-fechar-instalar" class="btn secundario" type="button">Agora não</button>
+</div>
+
+<div class="pwa-box oculto" id="pwa" role="region" aria-label="Instalar aplicativo">
+  <div class="pwa-info">
+    <div class="pwa-icon" aria-hidden="true">
+      <svg fill="none" height="16" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="16"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" x2="12" y1="15" y2="3"></line></svg>
+    </div>
+    <div class="pwa-text">
+      <strong id="pwa-titulo">Instalar aplicativo</strong>
+      <span id="pwa-sub">Acesso instantâneo e offline</span>
     </div>
   </div>
+  <div class="pwa-actions">
+    <button class="btn btn-pwa" type="button" id="btn-instalar">Instalar</button>
+    <button class="pwa-close" type="button" id="btn-fechar-pwa" aria-label="Fechar aviso de instalação">×</button>
+  </div>
+</div>
 
-  <script src="app.js" defer></script>
+<script src="app.js" defer></script>
 </body>
 </html>

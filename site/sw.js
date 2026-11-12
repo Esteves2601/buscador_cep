@@ -2,7 +2,7 @@
    Guarda o app em cache para abrir offline; as consultas ao ViaCEP
    continuam indo direto para a internet. */
 
-const CACHE = "buscador-cep-v1";
+const CACHE = "buscador-cep-v2";
 
 const SHELL = [
   "/",

@@ -1,50 +1,155 @@
-/* Buscador de CEP — versão web estática.
-   O navegador fala direto com o ViaCEP (programa de terceiros).
-   Não precisa de servidor de aplicação nem de chave de API. */
+/* Buscador de CEP — lógica do app.
+   Consulta o ViaCEP (programa de terceiros) direto do navegador. */
 
 const $ = (id) => document.getElementById(id);
 const TEMPO_LIMITE = 12000;
+const CHAVE_TEMA = "tema";
+const CHAVE_PWA = "ocultarInstalar";
+
+const REGIOES = {
+  AC: "Norte", AP: "Norte", AM: "Norte", PA: "Norte", RO: "Norte", RR: "Norte", TO: "Norte",
+  AL: "Nordeste", BA: "Nordeste", CE: "Nordeste", MA: "Nordeste", PB: "Nordeste",
+  PE: "Nordeste", PI: "Nordeste", RN: "Nordeste", SE: "Nordeste",
+  DF: "Centro-Oeste", GO: "Centro-Oeste", MT: "Centro-Oeste", MS: "Centro-Oeste",
+  ES: "Sudeste", MG: "Sudeste", RJ: "Sudeste", SP: "Sudeste",
+  PR: "Sul", RS: "Sul", SC: "Sul",
+};
 
 const el = {
-  abaCep: $("aba-cep"),
-  abaEnd: $("aba-end"),
-  painelCep: $("painel-cep"),
-  painelEnd: $("painel-end"),
+  tabCep: $("tab-cep"),
+  tabEnd: $("tab-end"),
   formCep: $("form-cep"),
   formEnd: $("form-end"),
   cep: $("cep"),
   uf: $("uf"),
   cidade: $("cidade"),
   rua: $("rua"),
-  statusCep: $("status-cep"),
-  statusEnd: $("status-end"),
+  status: $("status"),
+  statusTexto: $("status-texto"),
   resultado: $("resultado"),
-  btnCep: $("btn-cep"),
-  btnEnd: $("btn-end"),
+  estado: $("estado"),
+  estadoTitulo: $("estado-titulo"),
+  estadoTexto: $("estado-texto"),
+  carregando: $("carregando"),
+  lista: $("lista"),
+  btnBuscar: $("btn-buscar"),
+  btnBuscarEnd: $("btn-buscar-end"),
   btnMapa: $("btn-mapa"),
   btnCopiar: $("btn-copiar"),
-  lista: $("lista"),
+  btnTema: $("btn-tema"),
+  conexao: $("conexao"),
+  pwa: $("pwa"),
+  pwaTitulo: $("pwa-titulo"),
+  pwaSub: $("pwa-sub"),
+  btnInstalar: $("btn-instalar"),
+  btnFecharPwa: $("btn-fechar-pwa"),
 };
 
 const somenteDigitos = (t) => (t || "").replace(/\D/g, "");
-const formatarCep = (d) => {
-  const v = somenteDigitos(d).slice(0, 8);
-  return v.length > 5 ? `${v.slice(0, 5)}-${v.slice(5)}` : v;
-};
 
-function status(elStatus, msg, tipo = "") {
-  elStatus.textContent = msg;
-  elStatus.className = `status${tipo ? " " + tipo : ""}`;
+function formatarCep(valor) {
+  const v = somenteDigitos(valor).slice(0, 8);
+  return v.length > 5 ? `${v.slice(0, 5)}-${v.slice(5)}` : v;
 }
+
+/* ---------------- Status e estados ---------------- */
+
+function status(mensagem, tipo = "info") {
+  el.statusTexto.textContent = mensagem;
+  el.status.classList.remove("success", "error");
+  if (tipo === "ok") el.status.classList.add("success");
+  if (tipo === "erro") el.status.classList.add("error");
+}
+
+function esconderPainéis() {
+  el.resultado.classList.add("oculto");
+  el.estado.classList.add("oculto");
+  el.carregando.classList.add("oculto");
+}
+
+function mostrarEstado(titulo, texto) {
+  esconderPainéis();
+  el.estadoTitulo.textContent = titulo;
+  el.estadoTexto.textContent = texto;
+  el.estado.classList.remove("oculto");
+}
+
+function mostrarErro(titulo, texto) {
+  mostrarEstado(titulo, texto);
+  el.estado.classList.add("error");
+}
+
+function mostrarCarregando() {
+  esconderPainéis();
+  el.estado.classList.remove("error");
+  el.carregando.classList.remove("oculto");
+}
+
+function limparLista() {
+  el.lista.innerHTML = "";
+}
+
+/* ---------------- Tema (claro / escuro) ---------------- */
+
+let metaTema = null;
+
+function aplicarTema(tema, salvar = true) {
+  const escuro = tema === "escuro";
+  document.documentElement.classList.toggle("dark-mode", escuro);
+  el.btnTema.setAttribute("aria-pressed", String(escuro));
+
+  if (!metaTema) {
+    metaTema = document.createElement("meta");
+    metaTema.name = "theme-color";
+    metaTema.dataset.dinamico = "1";
+    document.head.appendChild(metaTema);
+  }
+  metaTema.content = escuro ? "#0C120E" : "#236B32";
+
+  if (salvar) localStorage.setItem(CHAVE_TEMA, tema);
+}
+
+function temaInicial() {
+  const salvo = localStorage.getItem(CHAVE_TEMA);
+  if (salvo === "claro" || salvo === "escuro") return salvo;
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "escuro" : "claro";
+}
+
+aplicarTema(temaInicial(), false);
+
+el.btnTema.addEventListener("click", () => {
+  const escuroAtual = document.documentElement.classList.contains("dark-mode");
+  aplicarTema(escuroAtual ? "claro" : "escuro");
+});
+
+/* ---------------- Conexão ---------------- */
+
+function atualizarConexao() {
+  const online = navigator.onLine;
+  el.conexao.classList.toggle("offline", !online);
+  el.conexao.innerHTML = '<span class="conn-dot" aria-hidden="true"></span> ' +
+    (online ? "ViaCEP Online" : "Sem conexão");
+}
+
+window.addEventListener("online", atualizarConexao);
+window.addEventListener("offline", atualizarConexao);
+atualizarConexao();
+
+/* ---------------- Abas ---------------- */
 
 function mudarAba(mostrarCep) {
-  el.painelCep.classList.toggle("oculto", !mostrarCep);
-  el.painelEnd.classList.toggle("oculto", mostrarCep);
-  el.abaCep.classList.toggle("ativa", mostrarCep);
-  el.abaEnd.classList.toggle("ativa", !mostrarCep);
-  el.abaCep.setAttribute("aria-selected", String(mostrarCep));
-  el.abaEnd.setAttribute("aria-selected", String(!mostrarCep));
+  el.formCep.classList.toggle("oculto", !mostrarCep);
+  el.formEnd.classList.toggle("oculto", mostrarCep);
+  el.tabCep.classList.toggle("active", mostrarCep);
+  el.tabEnd.classList.toggle("active", !mostrarCep);
+  el.tabCep.setAttribute("aria-selected", String(mostrarCep));
+  el.tabEnd.setAttribute("aria-selected", String(!mostrarCep));
 }
+
+el.tabCep.addEventListener("click", () => mudarAba(true));
+el.tabEnd.addEventListener("click", () => mudarAba(false));
+
+/* ---------------- Rede ---------------- */
 
 async function buscarJson(url) {
   const controle = new AbortController();
@@ -63,54 +168,77 @@ async function buscarJson(url) {
   }
 }
 
-/* ---------- Aba 1: CEP -> Endereço ---------- */
+/* ---------------- Consulta por CEP ---------------- */
 
-function preencher(d) {
-  $("r-rua").textContent = d.logradouro || "—";
-  $("r-bairro").textContent = d.bairro || "—";
-  $("r-cidade").textContent = d.localidade || "—";
-  $("r-uf").textContent = d.uf || "—";
-  $("r-ddd").textContent = d.ddd || "—";
-  $("r-ibge").textContent = d.ibge || "—";
-  $("r-cep").textContent = formatarCep(d.cep) || "—";
+function preencher(dados) {
+  const uf = dados.uf || "";
+  el.resultado.querySelector(".result-cep").textContent = formatarCep(dados.cep) || "—";
+  $("r-rua").textContent = dados.logradouro || "—";
+  $("r-bairro").textContent = dados.bairro || "—";
+  $("r-cidade").textContent = dados.localidade
+    ? `${dados.localidade}${uf ? " — " + uf : ""}`
+    : "—";
+  $("r-ddd").textContent = dados.ddd ? `(${dados.ddd})` : "—";
+  $("r-ibge").textContent = dados.ibge || "—";
 
-  const endereco = [d.logradouro, d.bairro, d.localidade, d.uf].filter(Boolean).join(", ");
-  el.btnMapa.href = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(endereco);
-  el.btnCopiar.dataset.texto = `${endereco} — CEP ${formatarCep(d.cep)}`;
+  const regiao = REGIOES[uf];
+  $("r-tag").textContent = uf ? `${uf}${regiao ? " · " + regiao : ""}` : "Brasil";
+
+  const endereco = [dados.logradouro, dados.bairro, dados.localidade, uf]
+    .filter(Boolean)
+    .join(", ");
+  el.btnMapa.href =
+    "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(endereco);
+  el.btnCopiar.dataset.texto = `${endereco} — CEP ${formatarCep(dados.cep)}`;
 }
 
 async function consultarCep(valor) {
   const digitos = somenteDigitos(valor ?? el.cep.value);
+
   if (digitos.length !== 8) {
-    status(el.statusCep, "Digite um CEP com 8 dígitos.", "erro");
+    el.cep.classList.add("erro");
+    status("Digite um CEP com 8 dígitos válidos.", "erro");
+    mostrarErro(
+      "Formato incompleto",
+      "Certifique-se de digitar o CEP com todos os 8 números antes de acionar a busca."
+    );
     el.cep.focus();
     return;
   }
 
-  el.btnCep.disabled = true;
-  el.btnCep.textContent = "Buscando…";
-  status(el.statusCep, "Consultando o ViaCEP…");
+  el.cep.classList.remove("erro");
+  el.btnBuscar.disabled = true;
+  el.btnBuscar.textContent = "Buscando…";
+  status("Consultando o ViaCEP…");
+  mostrarCarregando();
+  limparLista();
 
   try {
     const dados = await buscarJson(`https://viacep.com.br/ws/${digitos}/json/`);
     if (dados.erro) {
-      el.resultado.classList.add("oculto");
-      status(el.statusCep, "CEP não encontrado. Confira os números.", "erro");
+      status("CEP não encontrado. Confira os números.", "erro");
+      mostrarErro(
+        "CEP não encontrado",
+        "Não há endereço cadastrado para esse CEP. Verifique os números e tente novamente."
+      );
       return;
     }
     preencher(dados);
+    esconderPainéis();
+    el.estado.classList.remove("error");
     el.resultado.classList.remove("oculto");
-    status(el.statusCep, "Endereço encontrado!", "ok");
+    status("Endereço localizado com sucesso no ViaCEP.", "ok");
   } catch (erro) {
-    el.resultado.classList.add("oculto");
-    status(el.statusCep, erro.message, "erro");
+    status(erro.message, "erro");
+    mostrarErro("Falha na consulta", erro.message);
   } finally {
-    el.btnCep.disabled = false;
-    el.btnCep.textContent = "Buscar";
+    el.btnBuscar.disabled = false;
+    el.btnBuscar.innerHTML =
+      '<svg fill="none" height="16" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" width="16" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg> Buscar';
   }
 }
 
-/* ---------- Aba 2: Endereço -> CEP ---------- */
+/* ---------------- Consulta por endereço ---------------- */
 
 async function consultarEndereco() {
   const uf = el.uf.value.trim().toUpperCase();
@@ -118,62 +246,76 @@ async function consultarEndereco() {
   const rua = el.rua.value.trim();
 
   if (!/^[A-Z]{2}$/.test(uf)) {
-    status(el.statusEnd, "Informe a UF com 2 letras (ex: SP).", "erro");
+    status("Informe a UF com 2 letras (ex: SP).", "erro");
     el.uf.focus();
     return;
   }
   if (!cidade) {
-    status(el.statusEnd, "Informe a cidade.", "erro");
+    status("Informe a cidade.", "erro");
     el.cidade.focus();
     return;
   }
   if (rua.length < 3) {
-    status(el.statusEnd, "Informe a rua com pelo menos 3 letras.", "erro");
+    status("Informe a rua com pelo menos 3 letras.", "erro");
     el.rua.focus();
     return;
   }
 
-  el.btnEnd.disabled = true;
-  el.btnEnd.textContent = "Buscando…";
-  el.lista.innerHTML = "";
-  status(el.statusEnd, "Consultando o ViaCEP…");
+  el.btnBuscarEnd.disabled = true;
+  el.btnBuscarEnd.textContent = "Buscando…";
+  status("Consultando o ViaCEP…");
+  mostrarCarregando();
+  limparLista();
 
   try {
-    const url = `https://viacep.com.br/ws/${encodeURIComponent(uf)}/${encodeURIComponent(cidade)}/${encodeURIComponent(rua)}/json/`;
+    const url = `https://viacep.com.br/ws/${encodeURIComponent(uf)}/${encodeURIComponent(
+      cidade
+    )}/${encodeURIComponent(rua)}/json/`;
     const dados = await buscarJson(url);
 
     if (!Array.isArray(dados) || dados.length === 0 || dados.erro) {
-      status(el.statusEnd, "Nenhum endereço encontrado. Tente outro nome de rua.", "erro");
+      status("Nenhum endereço encontrado. Tente outro nome de rua.", "erro");
+      mostrarErro(
+        "Nenhum resultado",
+        "Não encontramos endereços com esses dados. Confira a cidade e o nome da rua."
+      );
       return;
     }
 
-    status(el.statusEnd, `${dados.length} resultado(s). Toque em um item para ver o endereço.`, "ok");
+    esconderPainéis();
+    el.estado.classList.remove("error");
+    status(`${dados.length} resultado(s) encontrados. Toque para ver o endereço.`, "ok");
+
     dados.slice(0, 50).forEach((item) => {
-      const li = document.createElement("li");
       const cep = formatarCep(item.cep);
-      li.innerHTML = `<span class="cep-item">${cep}</span>` +
-        `<span>${item.logradouro || ""}</span><br>` +
-        `<small>${item.bairro || ""} · ${item.localidade || ""}/${item.uf || ""}</small>`;
-      li.addEventListener("click", () => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "cep-card-item";
+      btn.innerHTML =
+        `<span>` +
+        `<span class="cep-item-cep">${cep}</span><br>` +
+        `<span class="cep-item-rua">${item.logradouro || ""}</span><br>` +
+        `<span class="cep-item-local">${item.bairro || ""} · ${item.localidade || ""}/${item.uf || ""}</span>` +
+        `</span>` +
+        `<svg fill="none" height="16" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="16" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg>`;
+      btn.addEventListener("click", () => {
         mudarAba(true);
         el.cep.value = cep;
         consultarCep(cep);
         window.scrollTo({ top: 0, behavior: "smooth" });
       });
-      el.lista.appendChild(li);
+      el.lista.appendChild(btn);
     });
   } catch (erro) {
-    status(el.statusEnd, erro.message, "erro");
+    status(erro.message, "erro");
+    mostrarErro("Falha na consulta", erro.message);
   } finally {
-    el.btnEnd.disabled = false;
-    el.btnEnd.textContent = "Buscar CEP";
+    el.btnBuscarEnd.disabled = false;
+    el.btnBuscarEnd.textContent = "Buscar CEP";
   }
 }
 
-/* ---------- Eventos ---------- */
-
-el.abaCep.addEventListener("click", () => mudarAba(true));
-el.abaEnd.addEventListener("click", () => mudarAba(false));
+/* ---------------- Eventos ---------------- */
 
 el.formCep.addEventListener("submit", (e) => {
   e.preventDefault();
@@ -187,6 +329,7 @@ el.formEnd.addEventListener("submit", (e) => {
 
 el.cep.addEventListener("input", () => {
   el.cep.value = formatarCep(el.cep.value);
+  el.cep.classList.remove("erro");
 });
 
 el.uf.addEventListener("input", () => {
@@ -194,17 +337,23 @@ el.uf.addEventListener("input", () => {
 });
 
 $("btn-limpar").addEventListener("click", () => {
-  el.formCep.reset();
-  el.resultado.classList.add("oculto");
-  status(el.statusCep, "Digite um CEP e clique em Buscar.");
+  el.cep.value = "";
+  el.cep.classList.remove("erro");
+  limparLista();
+  el.estado.classList.remove("error");
+  status("Digite um CEP e clique em Buscar.");
+  mostrarEstado(
+    "Pronto para consultar",
+    "Informe o CEP para carregar logradouro, bairro, cidade, DDD e código IBGE oficial."
+  );
   el.cep.focus();
 });
 
 el.btnCopiar.addEventListener("click", async () => {
   const texto = el.btnCopiar.dataset.texto || "";
+  if (!texto) return;
   try {
     await navigator.clipboard.writeText(texto);
-    el.btnCopiar.textContent = "Copiado!";
   } catch {
     const area = document.createElement("textarea");
     area.value = texto;
@@ -212,17 +361,17 @@ el.btnCopiar.addEventListener("click", async () => {
     area.select();
     document.execCommand("copy");
     area.remove();
-    el.btnCopiar.textContent = "Copiado!";
   }
-  setTimeout(() => { el.btnCopiar.textContent = "Copiar endereço"; }, 2000);
+  const original = el.btnCopiar.innerHTML;
+  el.btnCopiar.textContent = "Copiado!";
+  setTimeout(() => { el.btnCopiar.innerHTML = original; }, 2000);
 });
 
-/* Permite abrir por atalho do app: ?aba=endereco e ?cep=01310100 */
+/* ---------------- Atalhos de URL ---------------- */
+
 const parametros = new URLSearchParams(location.search);
 
-if (parametros.get("aba") === "endereco") {
-  mudarAba(false);
-}
+if (parametros.get("aba") === "endereco") mudarAba(false);
 
 const cepDaUrl = parametros.get("cep");
 if (cepDaUrl && somenteDigitos(cepDaUrl).length === 8) {
@@ -230,65 +379,62 @@ if (cepDaUrl && somenteDigitos(cepDaUrl).length === 8) {
   consultarCep(cepDaUrl);
 }
 
-/* ---------- App instalável (PWA) ---------- */
-
-const painelInstalar = $("instalar");
-const textoInstalar = $("instalar-texto");
-const btnInstalar = $("btn-instalar");
-const btnFecharInstalar = $("btn-fechar-instalar");
+/* ---------------- PWA ---------------- */
 
 let promptInstalar = null;
-let instalado = window.matchMedia("(display-mode: standalone)").matches ||
+let instalado =
+  window.matchMedia("(display-mode: standalone)").matches ||
   window.navigator.standalone === true;
-const instalacaoDispensada = () => localStorage.getItem("ocultarInstalar") === "1";
 
-function mostrarInstalar() {
-  if (!instalado && !instalacaoDispensada()) painelInstalar.classList.remove("oculto");
+function podeMostrarPwa() {
+  return !instalado && localStorage.getItem(CHAVE_PWA) !== "1";
 }
-function esconderInstalar() {
-  painelInstalar.classList.add("oculto");
+
+function mostrarPwa() {
+  if (podeMostrarPwa()) el.pwa.classList.remove("oculto");
+}
+
+function esconderPwa() {
+  el.pwa.classList.add("oculto");
 }
 
 window.addEventListener("beforeinstallprompt", (evento) => {
   evento.preventDefault();
   promptInstalar = evento;
-  mostrarInstalar();
+  mostrarPwa();
 });
 
-btnInstalar.addEventListener("click", async () => {
-  if (promptInstalar) {
-    promptInstalar.prompt();
-    const escolha = await promptInstalar.userChoice;
-    promptInstalar = null;
-    if (escolha && escolha.outcome === "accepted") {
-      instalado = true;
-      esconderInstalar();
-    }
+el.btnInstalar.addEventListener("click", async () => {
+  if (!promptInstalar) {
+    esconderPwa();
     return;
   }
-  textoInstalar.textContent =
-    'No iPhone: toque em Compartilhar e depois em "Adicionar à Tela de Início".';
+  promptInstalar.prompt();
+  const escolha = await promptInstalar.userChoice;
+  promptInstalar = null;
+  if (escolha && escolha.outcome === "accepted") {
+    instalado = true;
+    esconderPwa();
+  }
 });
 
-btnFecharInstalar.addEventListener("click", () => {
-  localStorage.setItem("ocultarInstalar", "1");
-  esconderInstalar();
+el.btnFecharPwa.addEventListener("click", () => {
+  localStorage.setItem(CHAVE_PWA, "1");
+  esconderPwa();
 });
 
 window.addEventListener("appinstalled", () => {
   instalado = true;
-  esconderInstalar();
+  esconderPwa();
 });
 
-// iPhone não tem instalação automática: mostramos as instruções
 if (/iphone|ipad|ipod/i.test(navigator.userAgent) && !instalado) {
-  textoInstalar.textContent =
-    'Instale no iPhone: toque em Compartilhar e depois em "Adicionar à Tela de Início".';
-  btnInstalar.textContent = "Entendi";
-  mostrarInstalar();
+  el.pwaTitulo.textContent = "Instalar no iPhone";
+  el.pwaSub.textContent = 'Toque em Compartilhar → "Adicionar à Tela de Início"';
+  el.btnInstalar.textContent = "Entendi";
+  mostrarPwa();
 }
 
-// Service worker (permite abrir o app offline)
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("sw.js").catch(() => {});
