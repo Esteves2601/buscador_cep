@@ -24,7 +24,7 @@
   <link href="https://fonts.googleapis.com" rel="preconnect">
   <link crossorigin href="https://fonts.gstatic.com" rel="preconnect">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="estilo.css">
+  <link rel="stylesheet" href="estilo.css?v=3">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -224,6 +224,31 @@
   </div>
 </div>
 
-<script src="app.js" defer></script>
+  <script>
+  /* Auto-recuperação: se o CSS não aplicar (cache/service worker antigo),
+     recarrega a folha de estilo com uma URL única, ignorando o cache. */
+  (function () {
+    function cssAplicou() {
+      var folhas = document.styleSheets;
+      for (var i = 0; i < folhas.length; i++) {
+        try {
+          if (folhas[i].href && folhas[i].href.indexOf("estilo.css") !== -1 &&
+              folhas[i].cssRules && folhas[i].cssRules.length > 0) return true;
+        } catch (e) { /* folha de outro domínio */ }
+      }
+      return false;
+    }
+    window.addEventListener("load", function () {
+      if (cssAplicou()) return;
+      if (sessionStorage.getItem("css-recuperado") === "1") return;
+      sessionStorage.setItem("css-recuperado", "1");
+      var link = document.createElement("link");
+      link.rel = "stylesheet";
+      link.href = "estilo.css?v=" + Date.now();
+      document.head.appendChild(link);
+    });
+  })();
+</script>
+<script src="app.js?v=3" defer></script>
 </body>
 </html>

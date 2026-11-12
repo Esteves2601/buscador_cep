@@ -436,7 +436,16 @@ if (/iphone|ipad|ipod/i.test(navigator.userAgent) && !instalado) {
 }
 
 if ("serviceWorker" in navigator) {
+  const tinhaController = Boolean(navigator.serviceWorker.controller);
+
+  // Quando um novo service worker assume, recarrega uma vez para pegar o visual novo.
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (tinhaController) location.reload();
+  });
+
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("sw.js").catch(() => {});
+    navigator.serviceWorker
+      .register("sw.js", { updateViaCache: "none" })
+      .catch(() => {});
   });
 }
